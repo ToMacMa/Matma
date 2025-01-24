@@ -1,9 +1,11 @@
 #---1 Setup---#
 import tkinter as tk
 from tkinter import ttk as ttk
-#from tktooltip import *
 import random
 import time
+from game_version import *
+
+print(GameVersion)
 
 class difficultySettings():
 
@@ -18,9 +20,10 @@ class difficultySettings():
         headerL = tk.Label(root,text="Ustawianie trudnośi",font=('Arial',40), bg='white')
 
         difficultySlider = tk.Scale(root, from_=1, to=100,orient='horizontal', bg='white', relief='groove')
+        label1 = tk.Label(root,text=f"Wersja: {GameVersion}",font=('Arial',10), bg='white')
+        label1.place(x=0,y=0)
 
-
-        button1 = tk.Button(root,text="Gotowy",font=('Arial',20), bg='white', relief='groove',command=lambda:setDifficulty())
+        button1 = tk.Button(root,text="Gotowy?",font=('Arial',20), bg='white', relief='groove',command=lambda:setDifficulty())
 
         # setting up grid
         root.columnconfigure(0,weight=1)
@@ -29,7 +32,7 @@ class difficultySettings():
 
         root.rowconfigure(0,weight=1)
         root.rowconfigure(1,weight=1)
-        root.rowconfigure(2,weight=2)
+        root.rowconfigure(2,weight=3)
 
         headerL.grid(row=0,column=1)
         difficultySlider.grid(row=1,column=1,sticky='we')
@@ -190,10 +193,9 @@ class App(tk.Tk):
         button3.grid(row=3,column=3,sticky='wesn')
 
         button4.grid(row=4,column=2,sticky='wesn')
+        label1 = tk.Label(root,text=f"Wersja: {GameVersion}",font=('Arial',10), bg='white')
+        label1.place(x=0,y=0)
 
-        #ToolTip(button4, msg="Musisz odpowiedzieć poprawnie na wszystkie\nobecne pytania.", delay=0,
-        #parent_kwargs={"bg": "black", "padx": 5, "pady": 5},
-        #fg="#ffffff", bg="#1c1c1c", padx=10, pady=10)
         #---1 Run---#
         root.mainloop()
 
