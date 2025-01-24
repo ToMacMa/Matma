@@ -3,9 +3,24 @@ import tkinter as tk
 from tkinter import ttk as ttk
 import random
 import time
-from game_version import *
+from game_version import GameVersion
+import requests
 
 print(GameVersion)
+
+url = 'https://raw.githubusercontent.com/ToMacMa/Matma/refs/heads/main/game_version.py'
+
+
+response = requests.get(url)
+file_Path = './downloads/newestVersion.py'
+
+if response.status_code == 200:
+    with open(file_Path, 'wb') as file:
+        file.write(response.content)
+    print('File downloaded successfully')
+else:
+    print('Failed to download file')
+
 
 class difficultySettings():
 
