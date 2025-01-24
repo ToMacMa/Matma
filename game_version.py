@@ -1,3 +1,3 @@
 import tkinter as tk
 
-GameVersion = 1.0
+GameVersion = 0.9

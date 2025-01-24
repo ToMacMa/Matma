@@ -21,6 +21,10 @@ if response.status_code == 200:
 else:
     print('Failed to download file')
 
+from downloads.newestVersion import GameVersion as NewestGameVersion
+
+if NewestGameVersion > GameVersion:
+    print('Update')
 
 class difficultySettings():
 
