@@ -23,6 +23,7 @@ else:
 
 from downloads.newestVersion import GameVersion as NewestGameVersion
 
+print(NewestGameVersion)
 if NewestGameVersion > GameVersion:
     print('Update')
 
