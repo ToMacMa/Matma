@@ -4,57 +4,81 @@ from tkinter import ttk as ttk
 import random
 import time
 from game_version import GameVersion
-import requests
-import webbrowser
+from tkinter import messagebox
+from tkinter import *
+import json
+#try:
+##    import requests
+##    import webbrowser
+##
+##except:
+##    pass
+##    #messagebox.showwarning("Ostrzeżenie", "Nie udaało się załadować:\n -requests\n -webbrowser") 
 
 print(GameVersion)
 
 url = 'https://raw.githubusercontent.com/ToMacMa/Matma/refs/heads/main/game_version.py'
 
 
-response = requests.get(url)
-file_Path = './downloads/newestVersion.py'
+#try:
+#    response = requests.get(url)
+#    file_Path = './downloads/newestVersion.py'
+#
+#    if response.status_code == 200:
+#        with open(file_Path, 'wb') as file:
+#            file.write(response.content)
+#        print('File downloaded successfully')
+#        from downloads.newestVersion import GameVersion as NewestGameVersion
+#    else:
+#        print('Failed to download file')
 
-if response.status_code == 200:
-    with open(file_Path, 'wb') as file:
-        file.write(response.content)
-    print('File downloaded successfully')
-else:
-    print('Failed to download file')
+#except:
+#    pass
+#    #messagebox.showwarning("Ostrzeżenie", f"Nie udało się zdobyć informacji o najnowszej wersji programu.\nObecna wersja:{GameVersion}") 
 
-from downloads.newestVersion import GameVersion as NewestGameVersion
+
+f = open("saveData.json", "a")
+f.close()
+f = open("saveData.json", "r")
+saveData = json.load(f)
+print(saveData)
 
 class updateWindow():
     def __init__(self):
-        root = tk.Tk()
-        root.title("Aktualizacja")
-        root.focus()
-        root.geometry("600x500")
-        root.config(bg='white')
-        #widgets
-        header = tk.Label(root,text="Aktualizacja\njest dostępna",font=('Arial',30),bg='white')
-        button1 = tk.Button(root,text="Aktualizuj",bg='white',relief='groove',command=lambda:webbrowser.open('https://github.com/ToMacMa/Matma', new = 2))
-        button2 = tk.Button(root,text="Nie teraz",bg='white',relief='groove',command=lambda:root.destroy())
+        try:
+            root = tk.Tk()
+            root.title("Aktualizacja")
+            #root.focus()
+            root.geometry("600x500")
+            root.config(bg='white')
+            #widgets
+            header = tk.Label(root,text="Aktualizacja\njest dostępna",font=('Arial',30),bg='white')
+            #button1 = tk.Button(root,text="Aktualizuj",bg='white',relief='groove',command=lambda:webbrowser.open('https://github.com/ToMacMa/Matma', new = 2))
+            button2 = tk.Button(root,text="Nie teraz",bg='white',relief='groove',command=lambda:root.destroy())
 
 
-        #grid
-        root.columnconfigure(0,weight=1000)
-        root.columnconfigure(1,weight=1)
-        root.columnconfigure(2,weight=1000)
+            #grid
+            root.columnconfigure(0,weight=1000)
+            root.columnconfigure(1,weight=1)
+            root.columnconfigure(2,weight=1000)
 
-        root.rowconfigure(0,weight=1)
-        root.rowconfigure(1,weight=1)
-        root.rowconfigure(2,weight=1)
+            root.rowconfigure(0,weight=1)
+            root.rowconfigure(1,weight=1)
+            root.rowconfigure(2,weight=1)
 
-        header.grid(row=0,column=1)
-        button1.grid(row=1,column=0,sticky='wesn')
-        button2.grid(row=1,column=2,sticky='wesn')
+            header.grid(row=0,column=1)
+            #button1.grid(row=1,column=0,sticky='wesn')
+            button2.grid(row=1,column=2,sticky='wesn')
 
-        root.mainloop()
+            root.mainloop()
+        except:
+            print("error")
+            #difficultySettings()
+            #App('Matma', 1000)
 
-print(NewestGameVersion)
-if NewestGameVersion > GameVersion:
-    updateWindow()
+#print(NewestGameVersion)
+#if NewestGameVersion > GameVersion:
+#    updateWindow()
 
 class difficultySettings():
 
