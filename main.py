@@ -5,6 +5,7 @@ import random
 import time
 from game_version import GameVersion
 import requests
+import webbrowser
 
 print(GameVersion)
 
@@ -23,9 +24,37 @@ else:
 
 from downloads.newestVersion import GameVersion as NewestGameVersion
 
+class updateWindow():
+    def __init__(self):
+        root = tk.Tk()
+        root.title("Aktualizacja")
+        root.focus()
+        root.geometry("600x500")
+        root.config(bg='white')
+        #widgets
+        header = tk.Label(root,text="Aktualizacja\njest dostępna",font=('Arial',30),bg='white')
+        button1 = tk.Button(root,text="Aktualizuj",bg='white',relief='groove',command=lambda:webbrowser.open('https://github.com/ToMacMa/Matma', new = 2))
+        button2 = tk.Button(root,text="Nie teraz",bg='white',relief='groove',command=lambda:root.destroy())
+
+
+        #grid
+        root.columnconfigure(0,weight=1000)
+        root.columnconfigure(1,weight=1)
+        root.columnconfigure(2,weight=1000)
+
+        root.rowconfigure(0,weight=1)
+        root.rowconfigure(1,weight=1)
+        root.rowconfigure(2,weight=1)
+
+        header.grid(row=0,column=1)
+        button1.grid(row=1,column=0,sticky='wesn')
+        button2.grid(row=1,column=2,sticky='wesn')
+
+        root.mainloop()
+
 print(NewestGameVersion)
 if NewestGameVersion > GameVersion:
-    print('Update')
+    updateWindow()
 
 class difficultySettings():
 
@@ -62,6 +91,7 @@ class difficultySettings():
             global difficulty
             difficulty = difficultySlider.get()
             root.destroy()
+
 
         root.mainloop()
 
