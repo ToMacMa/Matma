@@ -15,6 +15,8 @@ import json
 ##    pass
 ##    #messagebox.showwarning("Ostrzeżenie", "Nie udaało się załadować:\n -requests\n -webbrowser") 
 
+PointsInSession = 0
+
 print(GameVersion)
 
 url = 'https://raw.githubusercontent.com/ToMacMa/Matma/refs/heads/main/game_version.py'
@@ -40,8 +42,22 @@ url = 'https://raw.githubusercontent.com/ToMacMa/Matma/refs/heads/main/game_vers
 f = open("saveData.json", "a")
 f.close()
 f = open("saveData.json", "r")
-saveData = json.load(f)
-print(saveData)
+try:
+    saveData = json.load(f)
+    print(saveData)
+    f.close()
+except:
+    f.close()
+    f = open("saveData.json", "w")
+    f.write('{"points":0}')
+    f.close
+    f = open("saveData.json", "r")
+    saveData = json.load(f)
+    f.close()
+
+allTimePoints = saveData['points']
+print(allTimePoints)
+
 
 class updateWindow():
     def __init__(self):
@@ -92,7 +108,7 @@ class difficultySettings():
 
         headerL = tk.Label(root,text="Ustawianie trudnośi",font=('Arial',40), bg='white')
 
-        difficultySlider = tk.Scale(root, from_=1, to=100,orient='horizontal', bg='white', relief='groove')
+        difficultySlider = tk.Scale(root, from_=1, to=4,orient='horizontal', bg='white', relief='groove')
         label1 = tk.Label(root,text=f"Wersja: {GameVersion}",font=('Arial',10), bg='white')
         label1.place(x=0,y=0)
 
@@ -195,12 +211,23 @@ class App(tk.Tk):
                 input1.delete(0, 'end')
                 input2.delete(0, 'end')
                 input3.delete(0, 'end')
+        def saveSessionDataPoints():
+            global allTimePoints,PointsInSession,difficulty
+
+            allTimePoints = allTimePoints + difficulty
+
+            f = open('saveData.json', 'w')
+            f.write('{"points":'+str(allTimePoints)+'}')
+            f.close()
+
         def checkAnswers(textFielId):
-            global CorrectAnswers
+            global CorrectAnswers,PointsInSession,difficulty
             if textFielId == 1:
                 answer = input1.get()
                 if answer == str(questionsAnswers[0+TimesUsed*3-3]):
                     CorrectAnswers = CorrectAnswers + 1
+                    PointsInSession = PointsInSession + difficulty
+                    saveSessionDataPoints()
                     input1.delete(0, 'end')
                     input1.insert(0,"Poprawna odpowiedź!")
                     input1.config(fg='green')
@@ -212,6 +239,8 @@ class App(tk.Tk):
                 answer = input2.get()
                 if answer == str(questionsAnswers[1+TimesUsed*3-3]):
                     CorrectAnswers = CorrectAnswers + 1
+                    PointsInSession = PointsInSession + difficulty
+                    saveSessionDataPoints()
                     input2.delete(0, 'end')
                     input2.insert(0,"Poprawna odpowiedź!")
                     input2.config(fg='green')
@@ -223,6 +252,8 @@ class App(tk.Tk):
                 answer = input3.get()
                 if answer == str(questionsAnswers[2+TimesUsed*3-3]):
                     CorrectAnswers = CorrectAnswers + 1
+                    PointsInSession = PointsInSession + difficulty
+                    saveSessionDataPoints()
                     input3.delete(0, 'end')
                     input3.insert(0,"Poprawna odpowiedź!")
                     input3.config(fg='green')
