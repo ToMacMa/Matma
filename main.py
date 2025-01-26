@@ -1,21 +1,5 @@
 #---1 Setup---#
-import tkinter as tk
-from tkinter import ttk as ttk
-import random
-import time
-from game_version import GameVersion
-from tkinter import messagebox
-from tkinter import *
-import tables
-import json
-from tables import *
-#try:
-##    import requests
-##    import webbrowser
-##
-##except:
-##    pass
-##    #messagebox.showwarning("Ostrzeżenie", "Nie udaało się załadować:\n -requests\n -webbrowser") 
+import tkinter as tk;from tkinter import ttk as ttk;import random;import time;from game_version import GameVersion;from tkinter import messagebox;from tkinter import *;import json;import os;
 
 PointsInSession = 0
 
@@ -39,19 +23,36 @@ def createFile(path):
     f = open(path, "a")
     f.close()
 
+def loadJsonDataFromFile(path):
+    return json.loads(readFile(path))
 
-h5file = open_file("tutorial1.h5", mode="w", title="Test file")
+def createFolder(folder_name):
+    try:
+        os.mkdir(folder_name)
+        print(f"Directory '{folder_name}' created successfully.")
+    except FileExistsError:
+        print(f"Directory '{folder_name}' already exists.")
+    except PermissionError:
+        print(f"Permission denied: Unable to create '{folder_name}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def dumpJsonToFile(path,data):
+    with open(path, "w") as file:
+        json.dump(data, file)
+
 createFile("saveData.json")
 try:
-    saveData = json.loads(readFile('saveData.json'))
+    saveData = loadJsonDataFromFile('saveData.json')
     print(saveData)
 except:
-    writeToFile('saveData.json','{"points":0}')
-    saveData = json.loads(readFile('saveData.json'))
+    dumpJsonToFile('saveData.json',{"points":0})
+    saveData = loadJsonDataFromFile('saveData.json')
 
 allTimePoints = saveData['points']
 print(allTimePoints)
 
+createFolder('users')
 
 class updateWindow():
     def __init__(self):
@@ -85,10 +86,6 @@ class updateWindow():
             print("error")
             #difficultySettings()
             #App('Matma', 1000)
-
-#print(NewestGameVersion)
-#if NewestGameVersion > GameVersion:
-#    updateWindow()
 
 class difficultySettings():
 
@@ -212,7 +209,7 @@ class App(tk.Tk):
 
             allTimePoints = allTimePoints + difficulty
 
-            writeToFile('saveData.json','{"points":'+str(allTimePoints)+'}')
+            dumpJsonToFile('saveData.json',{"points":allTimePoints})
             label2.config(text=f"Punkty w tej sesji: {PointsInSession}, Punkty ogólnie: {allTimePoints}")
 
         def checkAnswers(textFielId):
