@@ -4,3 +4,4 @@ dist/
 __pycache__/
 downloads/
 saveData.txt
+saveData.json

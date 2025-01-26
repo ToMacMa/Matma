@@ -38,9 +38,23 @@ url = 'https://raw.githubusercontent.com/ToMacMa/Matma/refs/heads/main/game_vers
 #    pass
 #    #messagebox.showwarning("Ostrzeżenie", f"Nie udało się zdobyć informacji o najnowszej wersji programu.\nObecna wersja:{GameVersion}") 
 
+def readFile(path):
+    try:
+        f = open(path, "r")
+        return f.read()
+    except:
+        print(f"The path: {path} doesn't exist!")
 
-f = open("saveData.json", "a")
-f.close()
+def writeToFile(path,whatToWrite):
+    f = open(path, "w")
+    f.write(whatToWrite)
+    f.close()
+
+def createFile(path):
+    f = open(path, "a")
+    f.close()
+
+createFile("saveData.json")
 f = open("saveData.json", "r")
 try:
     saveData = json.load(f)
@@ -195,6 +209,8 @@ class App(tk.Tk):
         questionL2 = tk.Label(root, text=question[1],font=('Arial',30), bg='white')
         questionL3 = tk.Label(root, text=question[2],font=('Arial',30), bg='white')
 
+        label2 = tk.Label(root,text=f"Punkty w tej sesji: {PointsInSession}, Punkty ogólnie: {allTimePoints}",font=('Arial',10), bg='white')
+
         input1 = tk.Entry(root, bg='white', relief='groove',font=('Arial',40))
         input2 = tk.Entry(root, bg='white', relief='groove',font=('Arial',40))
         input3 = tk.Entry(root, bg='white', relief='groove',font=('Arial',40))
@@ -219,6 +235,7 @@ class App(tk.Tk):
             f = open('saveData.json', 'w')
             f.write('{"points":'+str(allTimePoints)+'}')
             f.close()
+            label2.config(text=f"Punkty w tej sesji: {PointsInSession}, Punkty ogólnie: {allTimePoints}")
 
         def checkAnswers(textFielId):
             global CorrectAnswers,PointsInSession,difficulty
@@ -271,9 +288,9 @@ class App(tk.Tk):
 
         root.columnconfigure(0, weight=100)
         root.columnconfigure(1, weight=12)
-        root.columnconfigure(1, weight=10)
         root.columnconfigure(2, weight=10)
-        root.columnconfigure(3, weight=100)
+        root.columnconfigure(3, weight=10)
+        root.columnconfigure(4, weight=100)
 
         root.rowconfigure(0, weight=10)
         root.rowconfigure(1, weight=3)
@@ -300,6 +317,7 @@ class App(tk.Tk):
         button4.grid(row=4,column=2,sticky='wesn')
         label1 = tk.Label(root,text=f"Wersja: {GameVersion}",font=('Arial',10), bg='white')
         label1.place(x=0,y=0)
+        label2.grid(row=5,column=1)
 
         #---1 Run---#
         root.mainloop()
