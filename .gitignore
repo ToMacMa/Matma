@@ -6,3 +6,4 @@ downloads/
 saveData.txt
 saveData.json
 users/
+*.json
