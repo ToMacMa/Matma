@@ -1,7 +1,26 @@
 #---1 Setup---#
-import tkinter as tk;from tkinter import ttk as ttk;import random;import time;from game_version import GameVersion;from tkinter import messagebox;from tkinter import *;import json;import os;
+import tkinter as tk
+from tkinter import ttk as ttk
+import random
+import time
+from game_version import GameVersion
+from tkinter import messagebox
+from tkinter import *
+import json
+import os
+import os.path
+#try:
+##    import requests
+##    import webbrowser
+##
+##except:
+##    pass
+##    #messagebox.showwarning("Ostrzeżenie", "Nie udaało się załadować:\n -requests\n -webbrowser") 
 
 PointsInSession = 0
+SelectedAcount = ""
+AccountPath = ""
+allTimePoints = int()
 
 print(GameVersion)
 
@@ -26,33 +45,140 @@ def createFile(path):
 def loadJsonDataFromFile(path):
     return json.loads(readFile(path))
 
-def createFolder(folder_name):
-    try:
-        os.mkdir(folder_name)
-        print(f"Directory '{folder_name}' created successfully.")
-    except FileExistsError:
-        print(f"Directory '{folder_name}' already exists.")
-    except PermissionError:
-        print(f"Permission denied: Unable to create '{folder_name}'.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
 def dumpJsonToFile(path,data):
     with open(path, "w") as file:
         json.dump(data, file)
 
-createFile("saveData.json")
-try:
-    saveData = loadJsonDataFromFile('saveData.json')
-    print(saveData)
-except:
-    dumpJsonToFile('saveData.json',{"points":0})
-    saveData = loadJsonDataFromFile('saveData.json')
+def createFolder(folder):
+    nested_directory = folder
+    try:
+        os.makedirs(nested_directory)
+        print(f"Nested directories '{nested_directory}' created successfully.")
+    except FileExistsError:
+        print(f"One or more directories in '{nested_directory}' already exist.")
+    except PermissionError:
+        print(f"Permission denied: Unable to create '{nested_directory}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-allTimePoints = saveData['points']
-print(allTimePoints)
+def createUser(username):
+    if not os.path.isfile(f"users/{username}.json"):
+        createFolder('users')
+        createFile(f"users/{username}.json")
+        dumpJsonToFile(f"users/{username}.json",{"points":0})
 
-createFolder('users')
+createUser('gość')
+
+class AccountSelection():
+    def __init__(self):
+        root = tk.Tk()
+        root.config(bg='white')
+        root.geometry("800x700")
+        root.title("Wybieranie konta")
+
+        accounts = list()
+        for i in os.listdir('users'):
+            accounts.append(i.removesuffix('.json'))
+        print(accounts)
+
+        def selectAccount(account):
+            global SelectedAcount,AccountPath,allTimePoints
+            print(account)
+            path = f"users/{account}.json"
+            try:
+                saveData = loadJsonDataFromFile(path)
+                print(saveData)
+            except:
+                dumpJsonToFile(path,{"points":0})
+                saveData = loadJsonDataFromFile(path)
+
+            SelectedAcount = account
+            AccountPath = path
+            print(saveData['points'])
+            allTimePoints = saveData['points']
+            print(allTimePoints)
+            root.destroy()
+        i2 = 0
+        for i in accounts:
+            label = tk.Label(root,text=i,font=('Arial',20),bg='white',relief='groove')
+            button = Button(root,text='Wybierz\nkonto',font=('Arial',20),bg='white'
+                            ,relief='groove',command=lambda i=i:selectAccount(i))
+
+            label.place_configure(x=0,y=0+(i2*122))
+            button.place_configure(x=0,y=35+(i2*122))
+            i2 = i2 + 1
+
+        def AccountCreationWindow(root):
+            #root.destroy()
+            window = tk.Tk()
+            window.title("Tworzenie nowego konta")
+            window.config(bg='white')
+            window.geometry("600x500")
+            window.focus()
+
+
+            header = Label(window,text="Tworzenie konta",font=('Arial',30),bg='white')
+
+            input1 = tk.Entry(window,bg='white',relief='groove',borderwidth=2,font=('Arial',15))
+            #input2 = tk.Entry(root,bg='white',relief='groove',borderwidth=2,font=('Arial',15))
+
+            label1 = Label(window,text="Nazwa:",font=('Arial',15),bg='white')
+            #label2 = Label(root,text="Hasło:",font=('Arial',15),bg='white')
+            label3 = Label(window,text="",font=('Arial',15),bg='white')
+
+            def CheckInfoAndCreateAccount(root,window):
+                d1 = str(input1.get())
+                #d2 = str(input2.get())
+                label3.config(fg='red')
+                d1 = d1.replace('.', '')
+                print(d1)
+                if len(d1)>10 or len(d1)<3:
+                    label3.config(text="Nazwa zbyt krótka lub zbyt długa")
+                    return
+                else:
+                    if 1==0:
+                        label3.config(text="Hasło zbyt krótkie lub zbyt długie")
+                        return
+                    else:
+                        createUser(d1)
+                        label3.config(text="Konto utworzone!")
+                        window.destroy()
+                        root.destroy()
+                        AccountSelection()
+                try:     
+                    label3.config(fg='black')
+                    label3.config(text="")
+                except:
+                    pass
+
+            button1 = Button(window,text="Stwórz konto",font=('Arial',15),bg='white',relief='groove'
+                             ,command=lambda:CheckInfoAndCreateAccount(root,window))
+
+            window.columnconfigure(0,weight=1)
+            window.columnconfigure(1,weight=1)
+            window.columnconfigure(2,weight=1)
+
+            window.rowconfigure(0,weight=1)
+            window.rowconfigure(1,weight=10)
+            window.rowconfigure(2,weight=10)
+            window.rowconfigure(3,weight=10)
+            window.rowconfigure(4,weight=10)
+
+            header.grid(row=0,column=1)
+            input1.grid(row=1,column=1,sticky='we')
+            #input2.grid(row=2,column=1,sticky='we')
+            label1.grid(row=1,column=0,sticky='e')
+            #12label2.grid(row=2,column=0,sticky='e')
+            label3.grid(row=4,column=1)
+            button1.grid(row=3,column=1,sticky='wesn')
+
+            window.mainloop()
+
+        button1 = Button(root,text="Utwórz nowe konto",font=('Arial',20),bg='white',
+                        relief='groove',command=lambda:AccountCreationWindow(root))
+        button1.pack()
+
+        root.mainloop()
 
 class updateWindow():
     def __init__(self):
@@ -86,7 +212,6 @@ class updateWindow():
             print("error")
             #difficultySettings()
             #App('Matma', 1000)
-
 class difficultySettings():
 
     def __init__(self):
@@ -122,15 +247,16 @@ class difficultySettings():
             global difficulty
             difficulty = difficultySlider.get()
             root.destroy()
+            App('Matma', 1000)
 
 
         root.mainloop()
-
 class App(tk.Tk):
     def __init__(self,title,size):
+        global allTimePoints
         rootSX = size
         rootSY = int(rootSX/4*2.5)
-        #---1 Creating the window---#
+        #---1 Creating the root---#
         root = tk.Tk()
         root.title(title)
         root.geometry(f"{rootSX}x{rootSY}")
@@ -205,11 +331,12 @@ class App(tk.Tk):
                 input2.delete(0, 'end')
                 input3.delete(0, 'end')
         def saveSessionDataPoints():
-            global allTimePoints,PointsInSession,difficulty
+            global allTimePoints,PointsInSession,difficulty,AccountPath,SelectedAcount
 
             allTimePoints = allTimePoints + difficulty
-
-            dumpJsonToFile('saveData.json',{"points":allTimePoints})
+            
+            dumpJsonToFile(AccountPath,{"points":0})
+            writeToFile(AccountPath,'{"points":'+str(allTimePoints)+'}')
             label2.config(text=f"Punkty w tej sesji: {PointsInSession}, Punkty ogólnie: {allTimePoints}")
 
         def checkAnswers(textFielId):
@@ -274,7 +401,7 @@ class App(tk.Tk):
         root.rowconfigure(4, weight=8)
         root.rowconfigure(5, weight=10)
 
-        #---3 1 Placing widgets on the window---#
+        #---3 1 Placing widgets on the root---#
 
         headerL.grid(row=0,column=2)
 
@@ -297,5 +424,6 @@ class App(tk.Tk):
         #---1 Run---#
         root.mainloop()
 
-difficultySettings()
-App('Matma', 1000)
+AccountSelection()
+if not AccountPath == "":
+    difficultySettings()
