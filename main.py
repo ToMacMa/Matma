@@ -166,14 +166,22 @@ class AccountSelection():
             #print(allTimePoints)
             root.destroy()
         i2 = 0
-        for i in accounts:
-            label = tk.Label(root,text=i,font=('Arial',20),bg='white',relief='groove')
-            button = Button(root,text='Wybierz\nkonto',font=('Arial',20),bg='white'
-                            ,relief='groove',command=lambda i=i:accountPasswordVerifying(i))
+        label = tk.Label(root,text='gość',font=('Arial',20),bg='white',relief='groove')
+        button = Button(root,text='Wybierz\nkonto',font=('Arial',20),bg='white'
+                        ,relief='groove',command=lambda:accountPasswordVerifying('gość'))
 
-            label.place_configure(x=0,y=0+(i2*122))
-            button.place_configure(x=0,y=35+(i2*122))
-            i2 = i2 + 1
+        label.place_configure(x=0,y=0+(i2*122))
+        button.place_configure(x=0,y=35+(i2*122))
+        i2 = i2 + 1
+        for i in accounts:
+            if not i == "gość":
+                label = tk.Label(root,text=i,font=('Arial',20),bg='white',relief='groove')
+                button = Button(root,text='Wybierz\nkonto',font=('Arial',20),bg='white'
+                                ,relief='groove',command=lambda i=i:accountPasswordVerifying(i))
+
+                label.place_configure(x=0,y=0+(i2*122))
+                button.place_configure(x=0,y=35+(i2*122))
+                i2 = i2 + 1
 
         def AccountCreationWindow(root):
             window = tk.Tk()
