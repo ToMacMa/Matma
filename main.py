@@ -6,7 +6,9 @@ import time
 from game_version import GameVersion
 from tkinter import messagebox
 from tkinter import *
+import tables
 import json
+from tables import *
 #try:
 ##    import requests
 ##    import webbrowser
@@ -21,29 +23,12 @@ print(GameVersion)
 
 url = 'https://raw.githubusercontent.com/ToMacMa/Matma/refs/heads/main/game_version.py'
 
-
-#try:
-#    response = requests.get(url)
-#    file_Path = './downloads/newestVersion.py'
-#
-#    if response.status_code == 200:
-#        with open(file_Path, 'wb') as file:
-#            file.write(response.content)
-#        print('File downloaded successfully')
-#        from downloads.newestVersion import GameVersion as NewestGameVersion
-#    else:
-#        print('Failed to download file')
-
-#except:
-#    pass
-#    #messagebox.showwarning("Ostrzeżenie", f"Nie udało się zdobyć informacji o najnowszej wersji programu.\nObecna wersja:{GameVersion}") 
-
 def readFile(path):
-    try:
-        f = open(path, "r")
-        return f.read()
-    except:
-        print(f"The path: {path} doesn't exist!")
+    
+    f = open(path, "r")
+    output = f.read()
+    f.close()
+    return output
 
 def writeToFile(path,whatToWrite):
     f = open(path, "w")
@@ -54,20 +39,15 @@ def createFile(path):
     f = open(path, "a")
     f.close()
 
+
+h5file = open_file("tutorial1.h5", mode="w", title="Test file")
 createFile("saveData.json")
-f = open("saveData.json", "r")
 try:
-    saveData = json.load(f)
+    saveData = json.loads(readFile('saveData.json'))
     print(saveData)
-    f.close()
 except:
-    f.close()
-    f = open("saveData.json", "w")
-    f.write('{"points":0}')
-    f.close
-    f = open("saveData.json", "r")
-    saveData = json.load(f)
-    f.close()
+    writeToFile('saveData.json','{"points":0}')
+    saveData = json.loads(readFile('saveData.json'))
 
 allTimePoints = saveData['points']
 print(allTimePoints)
@@ -232,9 +212,7 @@ class App(tk.Tk):
 
             allTimePoints = allTimePoints + difficulty
 
-            f = open('saveData.json', 'w')
-            f.write('{"points":'+str(allTimePoints)+'}')
-            f.close()
+            writeToFile('saveData.json','{"points":'+str(allTimePoints)+'}')
             label2.config(text=f"Punkty w tej sesji: {PointsInSession}, Punkty ogólnie: {allTimePoints}")
 
         def checkAnswers(textFielId):
