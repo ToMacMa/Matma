@@ -9,13 +9,44 @@ from tkinter import *
 import json
 import os
 import os.path
-#try:
-##    import requests
-##    import webbrowser
-##
-##except:
-##    pass
-##    #messagebox.showwarning("Ostrzeżenie", "Nie udaało się załadować:\n -requests\n -webbrowser") 
+from Crypto.Cipher import AES
+from base64 import b64encode, b64decode
+d2 = 'a'
+class Crypt:
+
+    def __init__(self, salt='SlTKeYOpHygTYkP3'):
+        self.salt = salt.encode('utf8')
+        self.enc_dec_method = 'utf-8'
+
+    def encrypt(self, str_to_enc, str_key):
+        try:
+            aes_obj = AES.new(str_key.encode('utf-8'), AES.MODE_CFB, self.salt)
+            hx_enc = aes_obj.encrypt(str_to_enc.encode('utf8'))
+            mret = b64encode(hx_enc).decode(self.enc_dec_method)
+            return mret
+        except ValueError as value_error:
+            if value_error.args[0] == 'IV must be 16 bytes long':
+                raise ValueError('Encryption Error: SALT must be 16 characters long')
+            elif value_error.args[0] == 'AES key must be either 16, 24, or 32 bytes long':
+                raise ValueError('Encryption Error: Encryption key must be either 16, 24, or 32 characters long')
+            else:
+                raise ValueError(value_error)
+
+    def decrypt(self, enc_str, str_key):
+        try:
+            aes_obj = AES.new(str_key.encode('utf8'), AES.MODE_CFB, self.salt)
+            str_tmp = b64decode(enc_str.encode(self.enc_dec_method))
+            str_dec = aes_obj.decrypt(str_tmp)
+            mret = str_dec.decode(self.enc_dec_method)
+            return mret
+        except ValueError as value_error:
+            if value_error.args[0] == 'IV must be 16 bytes long':
+                raise ValueError('Decryption Error: SALT must be 16 characters long')
+            elif value_error.args[0] == 'AES key must be either 16, 24, or 32 bytes long':
+                raise ValueError('Decryption Error: Encryption key must be either 16, 24, or 32 characters long')
+            else:
+                raise ValueError(value_error)
+
 
 PointsInSession = 0
 SelectedAcount = ""
@@ -61,13 +92,13 @@ def createFolder(folder):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def createUser(username):
+def createUser(username,password):
     if not os.path.isfile(f"users/{username}.json"):
         createFolder('users')
         createFile(f"users/{username}.json")
-        dumpJsonToFile(f"users/{username}.json",{"points":0})
+        dumpJsonToFile(f"users/{username}.json",{"points":0,"password": password})
 
-createUser('gość')
+createUser('gość','')
 
 class AccountSelection():
     def __init__(self):
@@ -80,7 +111,43 @@ class AccountSelection():
         for i in os.listdir('users'):
             accounts.append(i.removesuffix('.json'))
         print(accounts)
+        def accountPasswordVerifying(account):
+            def signIn(password,account,window):
+                global d2
+                test_crpt = Crypt()
+                enc_password = loadJsonDataFromFile(f'users/{account}.json')['password']
+                test_key = 'MyKey4TestingYnP'
+                test_dec_text = test_crpt.decrypt(enc_password, test_key)
+                if test_dec_text == password:
+                    d2 = enc_password
+                    window.destroy()
+                    selectAccount(account)
 
+            if account == "gość":
+                selectAccount('gość')
+            else:
+                print(account)
+                window = Tk()
+                window.geometry("500x400")
+                window.focus()
+                window.config(bg='white')
+
+                header = Label(window,text="Wpisz hasło",font=('Arial',30),bg='white')
+                input1 = Entry(window,font=('Arial',30),bg='white',borderwidth=2,relief='groove')
+                button1 = Button(window,text="Zaloguj się",font=('Arial', 30),bg='white',relief='groove',command=lambda account=account:signIn(input1.get(),account,window))
+                
+                window.rowconfigure(0,weight=1)
+                window.rowconfigure(1,weight=1)
+                window.rowconfigure(2,weight=1)
+                window.columnconfigure(0,weight=1)
+                window.columnconfigure(1,weight=1)
+                window.columnconfigure(2,weight=1)
+
+                header.grid(row=0,column=1)
+                input1.grid(row=1,column=1,sticky='we')
+                button1.grid(row=2,column=1,sticky='wesn')
+
+                window.mainloop()
         def selectAccount(account):
             global SelectedAcount,AccountPath,allTimePoints
             print(account)
@@ -94,22 +161,21 @@ class AccountSelection():
 
             SelectedAcount = account
             AccountPath = path
-            print(saveData['points'])
+            #print(saveData['points'])
             allTimePoints = saveData['points']
-            print(allTimePoints)
+            #print(allTimePoints)
             root.destroy()
         i2 = 0
         for i in accounts:
             label = tk.Label(root,text=i,font=('Arial',20),bg='white',relief='groove')
             button = Button(root,text='Wybierz\nkonto',font=('Arial',20),bg='white'
-                            ,relief='groove',command=lambda i=i:selectAccount(i))
+                            ,relief='groove',command=lambda i=i:accountPasswordVerifying(i))
 
             label.place_configure(x=0,y=0+(i2*122))
             button.place_configure(x=0,y=35+(i2*122))
             i2 = i2 + 1
 
         def AccountCreationWindow(root):
-            #root.destroy()
             window = tk.Tk()
             window.title("Tworzenie nowego konta")
             window.config(bg='white')
@@ -120,27 +186,32 @@ class AccountSelection():
             header = Label(window,text="Tworzenie konta",font=('Arial',30),bg='white')
 
             input1 = tk.Entry(window,bg='white',relief='groove',borderwidth=2,font=('Arial',15))
-            #input2 = tk.Entry(root,bg='white',relief='groove',borderwidth=2,font=('Arial',15))
+            input2 = tk.Entry(window,bg='white',relief='groove',borderwidth=2,font=('Arial',15))
 
             label1 = Label(window,text="Nazwa:",font=('Arial',15),bg='white')
-            #label2 = Label(root,text="Hasło:",font=('Arial',15),bg='white')
+            label2 = Label(window,text="Hasło:",font=('Arial',15),bg='white')
             label3 = Label(window,text="",font=('Arial',15),bg='white')
 
             def CheckInfoAndCreateAccount(root,window):
+                global d2
                 d1 = str(input1.get())
-                #d2 = str(input2.get())
+                d2 = str(input2.get())
                 label3.config(fg='red')
                 d1 = d1.replace('.', '')
-                print(d1)
+                test_crpt = Crypt()
+                test_text = str(d2)
+
+                test_key = 'MyKey4TestingYnP'
+                test_enc_text = test_crpt.encrypt(test_text, test_key)
                 if len(d1)>10 or len(d1)<3:
                     label3.config(text="Nazwa zbyt krótka lub zbyt długa")
                     return
                 else:
-                    if 1==0:
+                    if len(d2)>16 or len(d2)<8:
                         label3.config(text="Hasło zbyt krótkie lub zbyt długie")
                         return
                     else:
-                        createUser(d1)
+                        createUser(d1,test_enc_text)
                         label3.config(text="Konto utworzone!")
                         window.destroy()
                         root.destroy()
@@ -166,9 +237,9 @@ class AccountSelection():
 
             header.grid(row=0,column=1)
             input1.grid(row=1,column=1,sticky='we')
-            #input2.grid(row=2,column=1,sticky='we')
+            input2.grid(row=2,column=1,sticky='we')
             label1.grid(row=1,column=0,sticky='e')
-            #12label2.grid(row=2,column=0,sticky='e')
+            label2.grid(row=2,column=0,sticky='e')
             label3.grid(row=4,column=1)
             button1.grid(row=3,column=1,sticky='wesn')
 
@@ -224,7 +295,7 @@ class difficultySettings():
 
         headerL = tk.Label(root,text="Ustawianie trudnośi",font=('Arial',40), bg='white')
 
-        difficultySlider = tk.Scale(root, from_=1, to=4,orient='horizontal', bg='white', relief='groove')
+        difficultySlider = tk.Scale(root, from_=1, to=5,orient='horizontal', bg='white', relief='groove')
         label1 = tk.Label(root,text=f"Wersja: {GameVersion}",font=('Arial',10), bg='white')
         label1.place(x=0,y=0)
 
@@ -261,7 +332,7 @@ class App(tk.Tk):
         root.title(title)
         root.geometry(f"{rootSX}x{rootSY}")
         root.config(bg='white', relief='groove')
-        root.focus()
+        root.focus_force()
         global TimesUsed, CorrectAnswers
         CorrectAnswers = 0
         TimesUsed = 1
@@ -270,40 +341,57 @@ class App(tk.Tk):
         headerL = tk.Label(root,text="MATMA",font=('Arial',90), bg='white')
         question = list()
         questionsAnswers = list()
-        def createQuestion(ForcedOperation,RangeX,Rangey):
-            global difficulty
-            x = random.randint(RangeX[0],difficulty*RangeX[1])
-            y = random.randint(Rangey[0],difficulty*Rangey[1])
-            operation = random.randint(1,3)
-            if ForcedOperation:
-                operation = ForcedOperation
-            if operation == 1:
-                question.append(f"{x} + {y} ="); questionsAnswers.append(x+y)
-            elif operation == 2:
-                question.append(f"{x} x {y} ="); questionsAnswers.append(x*y)
-            elif operation == 3 or operation == 4:
-                if y > x:
-                    if operation == 3:
-                        question.append(f"{y} - {x} ="); questionsAnswers.append(y-x)
-                    if operation == 4:
-                        if x/y != int(x/y):
-                            createQuestion(4)
-                        else:
-                            question.append(f"{x} / {y} ="); questionsAnswers.append(x/y)
-                else:
-                    if operation == 3:
-                        question.append(f"{x} - {y} ="); questionsAnswers.append(x-y)
-                    if operation == 4:
-                        if y/x != int(y/x):
-                            createQuestion(4)
-                        else:
-                            question.append(f"{y} / {x} ="); questionsAnswers.append(y/x)
+        def createQuestion(ForcedOperation,RangeX,RangeY):
+            try:
+                global difficulty
+                x = random.randint(RangeX[0],difficulty*RangeX[1])
+                y = random.randint(RangeY[0],difficulty*RangeY[1])
+                z = random.randint(1,random.randint(15,random.randint(25,35)))
+                operation = random.randint(1,3)
+                if ForcedOperation:
+                    operation = ForcedOperation
+                if operation == 4:
+                    if x == 0:
+                        x = random.randint(2,12)
+                    if y == 0:
+                        y = random.randint(2,12)
+                    if z == 0:
+                        z = random.randint(2,12)
+                if operation == 1:
+                    question.append(f"{x} + {y} ="); questionsAnswers.append(x+y)
+                elif operation == 2:
+                    question.append(f"{x} x {y} ="); questionsAnswers.append(x*y)
+                elif operation == 3 or operation == 4:
+                    if y > x:
+                        if operation == 3:
+                            question.append(f"{y} - {x} ="); questionsAnswers.append(y-x)
+                        if operation == 4:
+                            if x/y != int(x/y):
+                                try:
+                                    createQuestion(4,RangeX,RangeY)
+                                except:
+                                    createQuestion(4,RangeX,RangeY)
+                            else:
+                                question.append(f"{z*x} / {y} ="); questionsAnswers.append(int((z*x)/y))
+                    else:
+                        if operation == 3:
+                            question.append(f"{x} - {y} ="); questionsAnswers.append(x-y)
+                        if operation == 4:
+                            if y/x != int(y/x):
+                                try:
+                                    createQuestion(4,RangeX,RangeY)
+                                except:
+                                    createQuestion(4,RangeX,RangeY)
+                            else:
+                                question.append(f"{z*y} / {x} ="); questionsAnswers.append(int((z*y)/x))
+            except ZeroDivisionError as e:
+                createQuestion(4,RangeX,RangeY)
 
         
         for i in range(0,1000):
-            createQuestion(1,(1,30),(1,30))
-            createQuestion(3,(1,60),(1,59))
-            createQuestion(2,(0,15),(0,15))
+            createQuestion(random.randint(1,3),(1,30),(1,30))
+            createQuestion(random.randint(2,2),(0,15),(0,15))
+            createQuestion(random.randint(3,4),(1,60),(1,59))
             
 
 
@@ -327,16 +415,22 @@ class App(tk.Tk):
                 questionL1.config(text=question[0+TimesUsed*3-3])
                 questionL2.config(text=question[1+TimesUsed*3-3])
                 questionL3.config(text=question[2+TimesUsed*3-3])
+                button1.config(state='normal')
+                button2.config(state='normal')
+                button3.config(state='normal')
+                input1.config(state='normal')
+                input2.config(state='normal')
+                input3.config(state='normal')
                 input1.delete(0, 'end')
                 input2.delete(0, 'end')
                 input3.delete(0, 'end')
+
         def saveSessionDataPoints():
-            global allTimePoints,PointsInSession,difficulty,AccountPath,SelectedAcount
+            global allTimePoints,PointsInSession,difficulty,AccountPath,SelectedAcount,d2
 
             allTimePoints = allTimePoints + difficulty
             
-            dumpJsonToFile(AccountPath,{"points":0})
-            writeToFile(AccountPath,'{"points":'+str(allTimePoints)+'}')
+            dumpJsonToFile(AccountPath,{"points":allTimePoints,"password":d2})
             label2.config(text=f"Punkty w tej sesji: {PointsInSession}, Punkty ogólnie: {allTimePoints}")
 
         def checkAnswers(textFielId):
@@ -350,6 +444,8 @@ class App(tk.Tk):
                     input1.delete(0, 'end')
                     input1.insert(0,"Poprawna odpowiedź!")
                     input1.config(fg='green')
+                    button1.config(state='disabled')
+                    input1.config(state='readonly')
                 else:
                     input1.delete(0, 'end')
                     input1.insert(0,"Zła odpowiedź.")
@@ -363,6 +459,8 @@ class App(tk.Tk):
                     input2.delete(0, 'end')
                     input2.insert(0,"Poprawna odpowiedź!")
                     input2.config(fg='green')
+                    button2.config(state='disabled')
+                    input2.config(state='readonly')
                 else:
                     input2.delete(0, 'end')
                     input2.insert(0,"Zła odpowiedź.")
@@ -376,6 +474,8 @@ class App(tk.Tk):
                     input3.delete(0, 'end')
                     input3.insert(0,"Poprawna odpowiedź!")
                     input3.config(fg='green')
+                    button3.config(state='disabled')
+                    input3.config(state='readonly')
                 else:
                     input3.delete(0, 'end')
                     input3.insert(0,"Zła odpowiedź.")
