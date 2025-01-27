@@ -161,6 +161,7 @@ class AccountSelection():
 
             SelectedAcount = account
             AccountPath = path
+            
             print(saveData['points'])
             allTimePoints = saveData['points']
             #print(allTimePoints)
